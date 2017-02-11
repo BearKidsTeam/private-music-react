@@ -22,6 +22,6 @@ $ npm start
 ``` bash
 $ npm run build
 ```
-The files will be in ```./dist```
+The files will be in ```./dist```.
 ## License
 [MIT](http://opensource.org/licenses/MIT)
