@@ -40,7 +40,6 @@ class Player extends React.Component {
         loop: false,
         order: false,
         playIcon: 'caret-right',
-        percent: 0,
         curTime: 0,
         totTime: 0,
         data: [],
@@ -57,7 +56,7 @@ class Player extends React.Component {
         this.audio = document.getElementsByTagName('audio')[0];
         this.fetchPlaylist();
         this.audio.ontimeupdate = () => {
-            this.setState({curTime: this.audio.currentTime, totTime: this.audio.duration, percent: this.audio.currentTime * 1.0 / this.audio.duration * 100.0});
+            this.setState({curTime: this.audio.currentTime, totTime: this.audio.duration});
         };
         this.audio.onpause = () => {
             this.setState({playIcon: 'caret-right'});
@@ -102,8 +101,10 @@ class Player extends React.Component {
         this.audio.pause();
         this.audio.src = this.state.source + this.currentFolder + '/' + filename;
         this.audio.load();
-        this.audio.play();
-        this.setState({playing: filename});
+        this.audio.oncanplay = () => {
+            this.audio.play();
+            this.setState({playing: filename});
+        }   
     };
     onRowClick = (record,index) => {
         this.audio.pause();
@@ -169,11 +170,11 @@ class Player extends React.Component {
     };
     onProgressChange = (value) => {
         this.audio.currentTime = value;
-        this.setState({percent: value * 1.0 / this.state.totTime,curTime: value});
+        this.setState({curTime: value});
     };
     onAfterChange = (value) => {
         this.audio.currentTime = value;
-        this.setState({percent: value * 1.0 / this.state.totTime,curTime: value});
+        this.setState({curTime: value});
     };
     render() {
         return (
@@ -219,8 +220,8 @@ class Player extends React.Component {
                                     <Col style={{ width:'calc(100% - 340px)', padding:5 }}>
                                         <Slider value={this.state.curTime} min={0} max={this.state.totTime} step={1} onChange={this.onProgressChange} tipFormatter={formatTime} style={{ borderTop:'4px solid #494949', borderBottom:'4px solid #494949' }} />
                                     </Col>
-                                    <Col style={{width:30, color:'#fff'}}> {formatTime(this.state.totTime)} </Col>
-                                    <Col style={{overflowY:'hidden', width:280, display:'block'}}>
+                                    <Col style={{ width:30, color:'#fff' }}> {formatTime(this.state.totTime)} </Col>
+                                    <Col style={{ overflowY:'hidden', width:280, display:'block' }}>
                                         <ButtonGroup>
                                             <Button type="primary" size='large' icon="step-backward" onClick={this.onPrevClick}/>
                                             <Button type="primary" size='large' icon={this.state.playIcon} onClick={this.onPlayClick} />
