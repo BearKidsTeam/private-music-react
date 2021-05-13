@@ -1,6 +1,6 @@
 import React from "react";
-import ReactDOM from 'react-dom';
 import { Row,Col,Button,Checkbox,Layout, Menu, Icon, Table, Slider, Modal, Input } from 'antd';
+import { StepBackwardOutlined,StepForwardOutlined,CaretRightOutlined,PauseOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
 const { Header, Content, Footer, Sider } = Layout;
@@ -39,7 +39,7 @@ class Player extends React.Component {
         playing:'',
         loop: false,
         order: false,
-        playIcon: 'caret-right',
+        playIcon: <CaretRightOutlined />,
         curTime: 0,
         totTime: 0,
         data: [],
@@ -59,20 +59,20 @@ class Player extends React.Component {
             this.setState({curTime: this.audio.currentTime, totTime: this.audio.duration});
         };
         this.audio.onpause = () => {
-            this.setState({playIcon: 'caret-right'});
+            this.setState({playIcon: <CaretRightOutlined />});
         }
         this.audio.onplay = () => {
-            this.setState({playIcon: 'pause'});
+            this.setState({playIcon: <PauseOutlined />});
         }
     };
     fetchPlaylist = () => {
-        axios({method: 'POST', url: this.state.source + '/api.php',data:'do=getplaylist&folder=/', headers:{'Content-Type':'application/x-www-form-urlencoded'}})
+        axios({method: 'POST', url: this.state.source + '/api.php',data:'do=getfilelist&folder=/', headers:{'Content-Type':'application/x-www-form-urlencoded'}})
         .then((response) => {
             this.setState({fdlist: response.data.result.data.subFolderList.map(x => decodeURIComponent(x))});
         }).catch(() => {});
     };
     fetchMusic = (folder) => {
-        axios({method: 'POST', url: this.state.source + '/api.php',data:'do=getplaylist&folder=' + folder, headers:{'Content-Type':'application/x-www-form-urlencoded'}})
+        axios({method: 'POST', url: this.state.source + '/api.php',data:'do=getfilelist&folder=' + folder, headers:{'Content-Type':'application/x-www-form-urlencoded'}})
         .then((response) => {
             this.pagination =  {
                 total: response.data.result.data.musicList.length,
@@ -106,13 +106,15 @@ class Player extends React.Component {
             this.setState({playing: filename});
         }   
     };
-    onRowClick = (record,index) => {
-        this.audio.pause();
-        this.audio.src = this.state.source + this.currentFolder + '/' + record.fileName;
-        this.audio.load();
-        this.audio.play();
-        this.setState({playing: record.fileName});
-    };
+    onRow = (record,index) => ({
+        onClick: () => {
+            this.audio.pause();
+            this.audio.src = this.state.source + this.currentFolder + '/' + record.fileName;
+            this.audio.load();
+            this.audio.play();
+            this.setState({playing: record.fileName});
+        }
+    });
     onPlayClick = () => {
         if(this.state.playIcon === 'pause') {
             this.audio.pause();
@@ -201,7 +203,7 @@ class Player extends React.Component {
                         </Sider>
                         <Layout style={{ background: '#fff' }}>
                             <Content style={{ margin: '0px' }}>
-                                <Table dataSource={this.state.data} columns={columns} style={{ background: '#fff' }} showHeader={false} pagination={this.pagination} onRowClick = {this.onRowClick}/>
+                                <Table dataSource={this.state.data} columns={columns} style={{ background: '#fff' }} showHeader={false} pagination={this.pagination} onRow = {this.onRow}/>
                             </Content>
                         </Layout>
                     </Layout>
@@ -223,9 +225,9 @@ class Player extends React.Component {
                                     <Col style={{ width:30, color:'#fff' }}> {formatTime(this.state.totTime)} </Col>
                                     <Col style={{ overflowY:'hidden', width:280, display:'block' }}>
                                         <ButtonGroup>
-                                            <Button type="primary" size='large' icon="step-backward" onClick={this.onPrevClick}/>
+                                            <Button type="primary" size='large' icon={<StepBackwardOutlined />} onClick={this.onPrevClick}/>
                                             <Button type="primary" size='large' icon={this.state.playIcon} onClick={this.onPlayClick} />
-                                            <Button type="primary" size='large' icon="step-forward" onClick={this.onNextClick}/>
+                                            <Button type="primary" size='large' icon={<StepForwardOutlined />} onClick={this.onNextClick}/>
                                         </ButtonGroup>
                                         &nbsp;&nbsp;&nbsp;&nbsp;
                                         <Checkbox style={{ color:'#fff' }} onChange={this.onLoopChange}>Loop</Checkbox>
